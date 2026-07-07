@@ -75,6 +75,7 @@ jobs:
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           prompt: "Read /tmp/agent-prompt.md and follow its instructions exactly."
+          settings: '{"maxSessionTurns": 50}'
 
       - name: Generate (Cursor)
         if: steps.provider.outputs.name == 'cursor'
@@ -83,7 +84,8 @@ jobs:
         run: |
           curl -fsS https://cursor.com/install | bash
           export PATH="$HOME/.cursor/bin:$HOME/.local/bin:$PATH"
-          cursor-agent -p "Read /tmp/agent-prompt.md and follow its instructions exactly." --force
+          # Cursor CLI has no turn cap; bound it by wall-clock instead
+          timeout 15m cursor-agent -p "Read /tmp/agent-prompt.md and follow its instructions exactly." --force
 
       # Generated content lives only on the gh-pages branch (served by
       # GitHub Pages); main's history stays free of digest files.

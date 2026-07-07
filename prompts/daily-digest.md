@@ -76,5 +76,6 @@ In the podcast sections, cite the briefing source (episode page link) even when 
 ## Rules
 
 - Every item must have a real, working source link you actually found — never invent URLs or stories.
+- Links must point to the specific article or episode page, never to a site homepage or show page. If you cannot find the specific URL, either drop the item or mark it explicitly with "(specific link not found)" so the reader knows it is unverified.
 - If research tools fail entirely, still write the file with a note: "Digest generation failed — sources unreachable."
 - Keep the whole digest under ~800 words. Plain, direct language.
