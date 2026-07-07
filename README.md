@@ -27,6 +27,7 @@ The generator picks whichever AI provider secret is configured (Settings → Sec
 | `ANTHROPIC_API_KEY` | Claude (API) | Pay per token |
 | `GEMINI_API_KEY` | Gemini | Free API tier available |
 | `CURSOR_API_KEY` | Cursor | Cursor plan / usage-based |
+| `COPILOT_GITHUB_TOKEN` | GitHub Copilot | Copilot plan; Free tier's ~50 premium requests/month is tight for ~27 runs — fine-grained PAT with "Copilot Requests" permission |
 
 Add exactly one secret to start; swap providers later by changing secrets — no workflow edits needed.
 

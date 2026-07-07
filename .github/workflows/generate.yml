@@ -26,7 +26,7 @@ jobs:
       - uses: actions/checkout@v5
 
       # Pick the AI provider from whichever secret is configured.
-      # Priority: Claude (OAuth or API key) -> Gemini -> Cursor.
+      # Priority: Claude (OAuth or API key) -> Gemini -> Cursor -> Copilot.
       - name: Select provider
         id: provider
         env:
@@ -34,6 +34,7 @@ jobs:
           ANTHROPIC_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
           CURSOR_KEY: ${{ secrets.CURSOR_API_KEY }}
+          COPILOT_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
         run: |
           if [ -n "$CLAUDE_OAUTH" ] || [ -n "$ANTHROPIC_KEY" ]; then
             echo "name=claude" >> "$GITHUB_OUTPUT"
@@ -41,8 +42,10 @@ jobs:
             echo "name=gemini" >> "$GITHUB_OUTPUT"
           elif [ -n "$CURSOR_KEY" ]; then
             echo "name=cursor" >> "$GITHUB_OUTPUT"
+          elif [ -n "$COPILOT_TOKEN" ]; then
+            echo "name=copilot" >> "$GITHUB_OUTPUT"
           else
-            echo "::error::No AI provider secret configured. Add CLAUDE_CODE_OAUTH_TOKEN, ANTHROPIC_API_KEY, GEMINI_API_KEY, or CURSOR_API_KEY in repo Settings -> Secrets -> Actions."
+            echo "::error::No AI provider secret configured. Add CLAUDE_CODE_OAUTH_TOKEN, ANTHROPIC_API_KEY, GEMINI_API_KEY, CURSOR_API_KEY, or COPILOT_GITHUB_TOKEN in repo Settings -> Secrets -> Actions."
             exit 1
           fi
 
@@ -86,6 +89,16 @@ jobs:
           export PATH="$HOME/.cursor/bin:$HOME/.local/bin:$PATH"
           # Cursor CLI has no turn cap; bound it by wall-clock instead
           timeout 15m cursor-agent -p "Read /tmp/agent-prompt.md and follow its instructions exactly." --force
+
+      - name: Generate (Copilot)
+        if: steps.provider.outputs.name == 'copilot'
+        env:
+          # Fine-grained PAT with the "Copilot Requests" permission; the
+          # workflow's own GITHUB_TOKEN has no Copilot entitlement.
+          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+        run: |
+          npm install -g @github/copilot
+          timeout 15m copilot -p "Read /tmp/agent-prompt.md and follow its instructions exactly." --allow-all-tools
 
       # Generated content lives only on the gh-pages branch (served by
       # GitHub Pages); main's history stays free of digest files.
