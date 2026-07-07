@@ -42,5 +42,8 @@ title: "Brief {{MONTH}}"
 ## Rules
 
 - Every item needs a real link you actually found — never invent publications or URLs.
+- Links must point to the specific article, publication, or announcement page, never a site homepage. If you cannot find it, mark the entry "(specific link not found)".
+- If research tools fail entirely, still write the file with a note: "Brief generation failed — sources unreachable."
+- Fetch smart: read tables of contents, abstracts, and summary pages before opening full documents; only open a full publication when the abstract is insufficient. This must not shrink the written output.
 - If a section has nothing new this month, write "Nothing new this month."
 - Aim for one page (~500–700 words). Plain, direct language.

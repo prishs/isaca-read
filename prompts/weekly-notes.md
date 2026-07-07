@@ -38,6 +38,9 @@ title: "Podcast notes {{WEEK}}"
 ## Rules
 
 - Only include episodes that actually exist, with real links you found — never invent episodes or URLs.
+- Links must point to the specific episode page, never a show homepage. If you cannot find it, mark the entry "(specific link not found)".
+- If research tools fail entirely, still write the file with a note: "Notes generation failed — sources unreachable."
+- Fetch smart: prefer show notes and episode descriptions over full transcripts; only open a transcript if the notes are too thin. This must not shrink the written output.
 - If a show published nothing this week, write "No new episode this week." under its heading.
 - Takeaways should be substantive (what was said and why it matters), not descriptions of the episode topic.
 - Keep the whole file under ~800 words.
