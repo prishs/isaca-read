@@ -7,7 +7,7 @@ Every weekday morning an automated agent sweeps security news sources — US CIS
 ## Branch layout
 
 - **`main`** — source only: prompts, workflows, this README, [`PLAN.md`](PLAN.md). Human-edited, pushed manually.
-- **`gh-pages`** — generated content only: `digests/YYYY-MM-DD.md`, `notes/YYYY-Www.md`, `briefs/YYYY-MM.md`, plus the Jekyll config and auto-listing index. Written exclusively by the workflows and served by GitHub Pages. Its history is squashed to a single snapshot commit by the daily cleanup, so removed files don't linger in git history.
+- **`gh-pages`** — generated content only: `digests/YYYY-MM-DD.md`, `notes/YYYY-Www.md`, `briefs/YYYY-MM.md`, plus the Jekyll config and auto-listing index. Written exclusively by the workflows and served by GitHub Pages. Its history is squashed to a single snapshot commit by the weekly cleanup, so removed files don't linger in git history.
 
 ## Content generation (provider-agnostic)
 
@@ -36,4 +36,4 @@ Add exactly one secret to start; swap providers later by changing secrets — no
 
 ## Retention
 
-[`.github/workflows/cleanup.yml`](.github/workflows/cleanup.yml) runs daily on `gh-pages`: it deletes generated files older than **30 days** (age read from the filename) and force-pushes the branch as a fresh single-commit snapshot, so old content is removed from history, not just from the tree.
+[`.github/workflows/cleanup.yml`](.github/workflows/cleanup.yml) runs weekly (Sundays) on `gh-pages`: it deletes generated files older than **30 days** (age read from the filename) and force-pushes the branch as a fresh single-commit snapshot, so old content is removed from history, not just from the tree.

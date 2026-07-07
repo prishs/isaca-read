@@ -21,6 +21,7 @@ permissions:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    timeout-minutes: 20 # research runs take ~5-10 min; never burn the 6h default on a hang
     steps:
       - uses: actions/checkout@v5
 
@@ -66,7 +67,7 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: "Read /tmp/agent-prompt.md and follow its instructions exactly."
-          claude_args: '--model claude-sonnet-5 --allowedTools "Read,Write,WebSearch,WebFetch,Bash(date:*)"'
+          claude_args: '--model claude-sonnet-5 --max-turns 50 --allowedTools "Read,Write,WebSearch,WebFetch,Bash(date:*)"'
 
       - name: Generate (Gemini)
         if: steps.provider.outputs.name == 'gemini'

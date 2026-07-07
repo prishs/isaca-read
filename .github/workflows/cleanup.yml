@@ -2,8 +2,8 @@ name: Cleanup old generated files
 
 on:
   schedule:
-    # Daily at 03:15 UTC
-    - cron: "15 3 * * *"
+    # Sundays at 03:15 UTC
+    - cron: "15 3 * * 0"
   workflow_dispatch:
 
 permissions:
