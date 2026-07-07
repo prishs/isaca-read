@@ -64,6 +64,7 @@ jobs:
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: "Read /tmp/agent-prompt.md and follow its instructions exactly."
           claude_args: '--model claude-sonnet-5 --allowedTools "Read,Write,WebSearch,WebFetch,Bash(date:*)"'
 
