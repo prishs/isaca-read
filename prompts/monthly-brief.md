@@ -24,10 +24,10 @@ title: "Brief {{MONTH}}"
 # Journal & Research Brief — {{MONTH}}
 
 ## ISACA Journal
-<Current issue theme; 3–5 most audit-relevant articles, one sentence each, with links>
+<Current issue theme; 3–5 articles most relevant to audit or security-leadership work, one sentence each, with links>
 
 ## Standards & frameworks
-- <update + why it matters for audit work> ([source](url))
+- <update + why it matters for audit or security-program work> ([source](url))
 
 ## NIST watch
 - <new/updated pubs and open drafts, with comment deadlines> ([source](url))
