@@ -1,0 +1,90 @@
+name: Daily digest
+
+on:
+  schedule:
+    # 05:00 UTC = 7:00 AM Berlin in summer (CEST); winter runs 6:00 AM local
+    - cron: "0 5 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pick the AI provider from whichever secret is configured.
+      # Priority: Claude (OAuth or API key) -> Gemini -> Cursor.
+      - name: Select provider
+        id: provider
+        env:
+          CLAUDE_OAUTH: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          ANTHROPIC_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CURSOR_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          if [ -n "$CLAUDE_OAUTH" ] || [ -n "$ANTHROPIC_KEY" ]; then
+            echo "name=claude" >> "$GITHUB_OUTPUT"
+          elif [ -n "$GEMINI_KEY" ]; then
+            echo "name=gemini" >> "$GITHUB_OUTPUT"
+          elif [ -n "$CURSOR_KEY" ]; then
+            echo "name=cursor" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::No AI provider secret configured. Add CLAUDE_CODE_OAUTH_TOKEN, ANTHROPIC_API_KEY, GEMINI_API_KEY, or CURSOR_API_KEY in repo Settings -> Secrets -> Actions."
+            exit 1
+          fi
+
+      - name: Prepare prompt
+        id: prompt
+        run: |
+          DATE=$(date -u +%F)
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+          sed "s/{{DATE}}/$DATE/g" prompts/daily-digest.md > /tmp/digest-prompt.md
+
+      - name: Generate digest (Claude)
+        if: steps.provider.outputs.name == 'claude'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: "Read /tmp/digest-prompt.md and follow its instructions exactly."
+          claude_args: '--allowedTools "Read,Write,WebSearch,WebFetch,Bash(date:*)"'
+
+      - name: Generate digest (Gemini)
+        if: steps.provider.outputs.name == 'gemini'
+        uses: google-github-actions/run-gemini-cli@v0
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          prompt: "Read /tmp/digest-prompt.md and follow its instructions exactly."
+
+      - name: Generate digest (Cursor)
+        if: steps.provider.outputs.name == 'cursor'
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          curl -fsS https://cursor.com/install | bash
+          export PATH="$HOME/.cursor/bin:$HOME/.local/bin:$PATH"
+          cursor-agent -p "Read /tmp/digest-prompt.md and follow its instructions exactly." --force
+
+      - name: Commit and push digest
+        env:
+          DATE: ${{ steps.prompt.outputs.date }}
+        run: |
+          if [ ! -f "digests/$DATE.md" ]; then
+            echo "::error::digests/$DATE.md was not created by the agent."
+            exit 1
+          fi
+          # Guard against the agent touching anything outside digests/
+          git checkout -- . 2>/dev/null || true
+          git clean -fd --exclude="digests/$DATE.md" >/dev/null 2>&1 || true
+          git add "digests/$DATE.md"
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "digest: $DATE"
+          git push

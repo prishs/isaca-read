@@ -7,3 +7,4 @@ markdown: kramdown
 exclude:
   - README.md
   - .github/
+  - prompts/
