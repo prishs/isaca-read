@@ -84,7 +84,9 @@ jobs:
           export PATH="$HOME/.cursor/bin:$HOME/.local/bin:$PATH"
           cursor-agent -p "Read /tmp/agent-prompt.md and follow its instructions exactly." --force
 
-      - name: Commit and push
+      # Generated content lives only on the gh-pages branch (served by
+      # GitHub Pages); main's history stays free of digest files.
+      - name: Publish to gh-pages
         env:
           OUT: ${{ steps.prompt.outputs.output }}
         run: |
@@ -92,16 +94,17 @@ jobs:
             echo "::error::$OUT was not created by the agent."
             exit 1
           fi
-          # Stage the target file, then discard anything else the agent touched
-          git add "$OUT"
-          git checkout -- .
-          git clean -fd >/dev/null
-          if git diff --cached --quiet; then
-            echo "No changes to commit."
-            exit 0
-          fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages:gh-pages
+          git worktree add /tmp/site gh-pages
+          mkdir -p "/tmp/site/$(dirname "$OUT")"
+          cp "$OUT" "/tmp/site/$OUT"
+          cd /tmp/site
+          git add "$OUT"
+          if git diff --cached --quiet; then
+            echo "No changes to publish."
+            exit 0
+          fi
           git commit -m "generate: $OUT"
-          git pull --rebase origin main
-          git push
+          git push origin gh-pages

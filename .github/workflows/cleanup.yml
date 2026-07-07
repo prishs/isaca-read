@@ -15,30 +15,40 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          fetch-depth: 0 # full history needed to read each file's commit date
+          ref: gh-pages
 
       - name: Delete generated files older than 30 days
         run: |
-          cutoff=$(( $(date -u +%s) - 30*24*3600 ))
+          # Files are named by period, so age comes from the filename:
+          # digests/YYYY-MM-DD.md, notes/YYYY-Www.md, briefs/YYYY-MM.md
+          dcut=$(date -u -d "30 days ago" +%F)
+          wcut=$(date -u -d "30 days ago" +%G-W%V)
+          mcut=$(date -u -d "30 days ago" +%Y-%m)
           removed=0
           for f in digests/*.md notes/*.md briefs/*.md; do
             [ -e "$f" ] || continue
-            ts=$(git log -1 --format=%ct -- "$f")
-            if [ -n "$ts" ] && [ "$ts" -lt "$cutoff" ]; then
-              echo "Removing $f (last commit $(date -u -d @$ts +%F))"
-              git rm -q "$f"
+            name=$(basename "$f" .md)
+            old=no
+            case "$f" in
+              digests/*) [[ "$name" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]] && [[ "$name" < "$dcut" ]] && old=yes ;;
+              notes/*)   [[ "$name" =~ ^[0-9]{4}-W[0-9]{2}$ ]] && [[ "$name" < "$wcut" ]] && old=yes ;;
+              briefs/*)  [[ "$name" =~ ^[0-9]{4}-[0-9]{2}$ ]] && [[ "$name" < "$mcut" ]] && old=yes ;;
+            esac
+            if [ "$old" = yes ]; then
+              echo "Removing $f"
+              rm "$f"
               removed=$((removed+1))
             fi
           done
           echo "removed=$removed" >> "$GITHUB_ENV"
 
-      - name: Commit and push
+      # Recommit everything as a single orphan snapshot so gh-pages history
+      # never accumulates deleted digests.
+      - name: Squash gh-pages to a single snapshot commit
         run: |
-          if [ "${removed:-0}" -gt 0 ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git commit -m "chore: remove generated files older than 30 days"
-            git push
-          else
-            echo "Nothing to remove."
-          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan snapshot
+          git add -A
+          git commit -m "content snapshot (removed: ${removed:-0})"
+          git push --force origin snapshot:gh-pages
