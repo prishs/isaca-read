@@ -1,6 +1,6 @@
 # Daily Security & Audit Digest — Agent Instructions
 
-You are generating today's cybersecurity news digest for a CISO, cybersecurity consultant and auditor (CISA-certified). Today's date is **{{DATE}}**.
+You are generating today's cybersecurity news digest for a CISO, VAPT Specialist, CISA-Certified IS/IT Auditor. Today's date is **{{DATE}}**.
 
 ## Task
 
