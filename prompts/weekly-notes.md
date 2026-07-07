@@ -9,8 +9,7 @@ Using web search/fetch, find the episodes published in the last 7 days for the p
 ## Podcasts to cover
 
 - **Risky Business** — weekly news analysis
-- **SANS Stormcast** — daily 5-minute technical briefs (summarize the week as one entry)
-- **CISO Series / Defense in Depth** — governance & leadership
+- **CISO Series / Defense in Depth** — governance & leadership (the weekly discussion shows, not the daily Cyber Security Headlines — that's covered in the daily digest, as is SANS Stormcast)
 - **Cloud Security Podcast** — cloud security & audit
 - **ISACA Podcast** — audit/GRC
 
@@ -29,9 +28,6 @@ title: "Podcast notes {{WEEK}}"
 - <takeaway 3>
 
 [Episode link](url)
-
-## SANS Stormcast — week in brief
-- ...
 
 (one section per show; 3 bullets each)
 

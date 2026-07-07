@@ -15,6 +15,20 @@ Research the past 24–48 hours of security news using web search/fetch, then wr
 - ISACA Now blog — audit/GRC items
 - Regulatory news: SEC cyber disclosure, EU NIS2/DORA, major data-protection rulings
 
+## Daily podcast briefings
+
+Also summarize today's (or the latest) episode of these two daily shows, from their show notes / episode pages:
+
+- **SANS Stormcast** (isc.sans.edu/podcast.html) — 5-minute technical brief
+- **Cyber Security Headlines** (CISO Series) — daily news headlines
+
+## Research efficiency (do not skip content — just fetch smart)
+
+- Fetch each source's index/show-notes page once; do not fetch full articles when the headline + summary already gives you what the digest entry needs.
+- Prefer show notes and episode descriptions over full transcripts — only open a transcript if the notes are too thin to extract takeaways.
+- When a podcast covers a story you already have from a news source (or vice versa), analyze it once and reuse — do not re-fetch or re-read the same story from a second outlet unless the coverage genuinely differs.
+- These rules cut research cost only. They must NOT shrink the written digest: keep the full output format and item counts below.
+
 ## Selection & ranking
 
 Pick the 5–10 most relevant items. Rank by relevance to **consulting and IT audit work**: actively exploited vulnerabilities, breaches with control-failure lessons, regulatory changes, and framework/standard updates rank highest; generic product news ranks lowest. Deduplicate stories covered by multiple outlets — one entry, best source linked.
@@ -40,12 +54,27 @@ title: "Digest {{DATE}}"
 - <one-liner> ([source](url))
 - ...
 
+## Podcast briefings
+### SANS Stormcast — <episode title> (<date>)
+- <takeaway 1>
+- <takeaway 2>
+
+[Episode](url)
+
+### Cyber Security Headlines — <episode title> (<date>)
+- <takeaway 1>
+- <takeaway 2>
+
+[Episode](url)
+
 ## Regulatory & framework watch
 - <item or "Nothing new today">
 ```
+
+In the podcast sections, cite the briefing source (episode page link) even when a story also appears under Top items; cross-reference instead of repeating ("covered in item 2 above" is fine as a bullet).
 
 ## Rules
 
 - Every item must have a real, working source link you actually found — never invent URLs or stories.
 - If research tools fail entirely, still write the file with a note: "Digest generation failed — sources unreachable."
-- Keep the whole digest under ~600 words. Plain, direct language.
+- Keep the whole digest under ~800 words. Plain, direct language.
