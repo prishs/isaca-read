@@ -31,7 +31,7 @@ Also summarize today's (or the latest) episode of these two daily shows, from th
 
 ## Selection & ranking
 
-Pick the 5–10 most relevant items. Rank by relevance to **consulting, IS (information systems) audit, and CISO work**: actively exploited vulnerabilities, breaches with control-failure lessons, regulatory changes, and framework/standard updates rank highest; items with security-program or board-level impact (major vendor/platform decisions, budget-shifting threat trends, sector-wide risks) also rank high; generic product news ranks lowest. Deduplicate stories covered by multiple outlets — one entry, best source linked.
+Pick the 5–10 most relevant items. Rank by relevance to **consulting, IS (information systems) audit, and CISO work**: actively exploited vulnerabilities, breaches with control-failure lessons, regulatory changes, and framework/standard updates rank highest; items with security-program or board-level impact (major vendor/platform decisions, budget-shifting threat trends, sector-wide risks) also rank high; new public PoCs/exploits, attack techniques, and notable vulnerability write-ups relevant to VAPT engagements also rank high; generic product news ranks lowest. Deduplicate stories covered by multiple outlets — one entry, best source linked.
 
 ## Output format for `digests/{{DATE}}.md`
 
