@@ -1,86 +1,64 @@
 # ISACA-Read: Stay-Current Plan for a Cybersecurity Consultant & Auditor (CISA)
 
 **Owner:** info@ocoretech.com
-**Created:** 2026-07-07
+**Created:** 2026-07-07 · **Status:** implemented (see README for operational details)
 **Goal:** A repeatable, low-effort system that keeps you current on security news, audit/GRC developments, podcast takeaways, and journal/research content.
 
 ---
 
 ## 1. What to track (three streams)
 
-### Stream A — News & advisories (daily/weekly)
-Fast-moving items: breaches, vulnerabilities, regulatory changes.
+### Stream A — News, advisories & daily podcasts → daily digest (6:00 AM IST, weekdays)
 
-| Source | Type | Why it matters for you |
+| Source | Type | Why it matters |
 |---|---|---|
 | US CISA (cisa.gov) Alerts & KEV catalog | Advisories | Client risk conversations, audit scoping |
 | The Hacker News / BleepingComputer | News | Broad incident coverage |
 | Krebs on Security | Blog | Deep incident reporting |
 | SANS Internet Storm Center | Daily diary | Practitioner-level threat notes |
-| ISACA Now Blog & @ISACA newsletter | Blog/newsletter | Audit/GRC angle |
-| Regulatory feeds (SEC cyber rules, EU NIS2/DORA, local DPA) | Regulatory | Directly affects audit criteria |
+| ISACA Now Blog | Blog | Audit/GRC angle |
+| Regulatory feeds (SEC cyber rules, EU NIS2/DORA, DPAs) | Regulatory | Directly affects audit criteria |
+| SANS Stormcast | Daily podcast | 5-min technical brief |
+| Cyber Security Headlines (CISO Series) | Daily podcast | Daily news headlines |
 
-### Stream B — Podcasts (weekly summaries)
-Listen or read AI-generated summaries; log takeaways.
+### Stream B — Weekly podcasts → notes (6:30 AM IST, Saturdays)
 
 - **Risky Business** — weekly news analysis
-- **SANS Stormcast** — 5-min daily technical brief
-- **CISO Series / Defense in Depth** — governance & leadership angle
+- **CISO Series / Defense in Depth** — governance & leadership (weekly discussion shows)
 - **Cloud Security Podcast** — cloud audit relevance
 - **ISACA Podcast** — directly CISA-relevant
 
-### Stream C — Journals & research (monthly/quarterly)
-Slower, deeper material.
+### Stream C — Journals & research → monthly brief (7:00 AM IST, 1st of month)
 
-- **ISACA Journal** (member content — accessible via your isaca.org login)
+- **ISACA Journal** — public TOC/abstracts (member full-text: local sessions only, credentials in local `.env`)
 - **NIST publications** (SP 800 series drafts & finals)
-- **Verizon DBIR, Mandiant M-Trends, IBM Cost of a Breach** (annual reports)
+- **Verizon DBIR, Mandiant M-Trends, IBM Cost of a Breach** (annual reports, when released)
 - **Cloud Security Alliance research**
-- **Academic/industry**: Computers & Security, IEEE S&P highlights (skim abstracts)
+- Standards watch: COBIT, ISO/IEC 27001/27002, CIS Controls, PCI DSS, SOC 2
 
 ---
 
-## 2. Cadence & workflow
+## 2. How it runs
+
+Fully automated in GitHub Actions (no local machine needed) via one reusable generator; provider-agnostic (Claude OAuth/Sonnet today; Gemini, Cursor, or Copilot by swapping one repo secret). Output is Markdown on the `gh-pages` branch, rendered by GitHub Pages at https://prishs.github.io/isaca-read/; files older than 30 days are removed weekly with squashed history. Prompts (source lists, formats, anti-hallucination and fetch-efficiency rules) live in `prompts/`.
+
+Your part: read the site (or `git fetch origin gh-pages`), and edit prompts/plan on `main` as needs change.
+
+---
+
+## 3. Personal workflow on top of the automation
 
 | Cadence | Activity | Time budget |
 |---|---|---|
-| Daily (Mon–Fri) | Skim news digest; flag 1–3 items relevant to active clients | 10 min |
-| Weekly (e.g. Friday) | Podcast summaries + one longer article; write 3-bullet takeaways | 30–45 min |
-| Monthly | ISACA Journal issue + one NIST/framework update | 1–2 hrs |
-| Quarterly | Review annual reports (DBIR etc.); update your personal "audit talking points" doc | 2 hrs |
-
-**Capture format:** one Markdown note per week in this repo (`notes/YYYY-WW.md`) with sections: *News flags*, *Podcast takeaways*, *Journal/research*, *Client-relevant actions*.
+| Daily (Mon–Fri) | Skim digest; flag 1–3 items relevant to active clients | 10 min |
+| Saturday | Read podcast notes + one longer article | 30 min |
+| Monthly | Read the brief; pick one NIST/framework item to go deep on | 1–2 hrs |
+| Quarterly | Review annual reports (DBIR etc.); refresh personal "audit talking points" | 2 hrs |
 
 ---
 
-## 3. How I (Claude Code) can automate this
+## 4. Possible future enhancements
 
-1. **Scheduled digest agent** — a recurring routine (e.g. weekday mornings) that:
-   - Searches/fetches the Stream A sources,
-   - Produces a deduplicated digest ranked by relevance to consulting/audit work,
-   - Writes it to `digests/YYYY-MM-DD.md` (or sends a notification).
-2. **Weekly podcast summary run** — fetch show notes/transcripts for the podcasts above and produce 3-bullet summaries per episode into `notes/`.
-3. **Monthly journal sweep** — deep-research pass over new ISACA Journal TOC (using your isaca.org login for member content), NIST releases, and framework changes; output a one-page brief to `briefs/`.
-
-> To activate any of these, just ask me to "set up the schedule" — I'll create the recurring agents.
-
----
-
-## 4. Repo structure (proposed)
-
-```
-isaca-read/
-├── PLAN.md            ← this file
-├── digests/           ← automated daily/weekly news digests
-├── notes/             ← your weekly takeaway notes (YYYY-WW.md)
-└── briefs/            ← monthly journal/research one-pagers
-```
-
----
-
-## 5. Next steps
-
-- [ ] Confirm/edit the source lists above (add region-specific regulators, client-sector feeds)
-- [ ] Decide delivery: files in this repo, email, or notifications
-- [ ] Provide isaca.org login (store in a local `.env` file, kept out of git) for member-only Journal access
-- [ ] Ask me to set up the scheduled digest routine
+- [ ] Client-sector-specific source feeds (add to `prompts/daily-digest.md`)
+- [ ] Local monthly deep-dive on ISACA Journal full text using member login (`.env`)
+- [ ] Notification (email/push) when a digest lands
