@@ -31,8 +31,8 @@ title: "Podcast notes {{WEEK}}"
 
 (one section per show; 3 bullets each)
 
-## Consulting & CISO angle
-<2–4 sentences: which of this week's themes are worth raising with audit/consulting clients or bringing to leadership/board discussions, and why>
+## Audit, CISO & VAPT angle
+<2–4 sentences: which of this week's themes are worth raising with audit clients, bringing to leadership/board discussions, or factoring into VAPT engagements, and why>
 ```
 
 ## Rules

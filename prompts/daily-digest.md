@@ -31,7 +31,13 @@ Also summarize today's (or the latest) episode of these two daily shows, from th
 
 ## Selection & ranking
 
-Pick the 5–10 most relevant items. Rank by relevance to **consulting, IS (information systems) audit, and CISO work**: actively exploited vulnerabilities, breaches with control-failure lessons, regulatory changes, and framework/standard updates rank highest; items with security-program or board-level impact (major vendor/platform decisions, budget-shifting threat trends, sector-wide risks) also rank high; new public PoCs/exploits, attack techniques, and notable vulnerability write-ups relevant to VAPT engagements also rank high; generic product news ranks lowest. Deduplicate stories covered by multiple outlets — one entry, best source linked.
+Pick the 5–10 most relevant items. Rank by relevance to **IS/IT audit, CISO, and VAPT work**, in that priority order:
+1. **Highest:** actively exploited vulnerabilities, breaches with control-failure lessons, regulatory changes, framework/standard updates (audit)
+2. **High:** security-program or board-level impact — major vendor/platform decisions, budget-shifting threat trends, sector-wide risks (CISO)
+3. **High:** new public PoCs/exploits, attack techniques, notable vulnerability write-ups (VAPT)
+4. **Lowest:** generic product news
+
+An item may fit several tiers — rank it by the highest tier it touches. Deduplicate stories covered by multiple outlets — one entry, best source linked.
 
 ## Output format for `digests/{{DATE}}.md`
 
@@ -45,7 +51,7 @@ title: "Digest {{DATE}}"
 ## Top items
 
 ### 1. <Headline>
-**Why it matters for audit/consulting/CISO:** <1–2 sentences>
+**Why it matters for audit/CISO/VAPT:** <1–2 sentences>
 <2–3 sentence summary> ([source](url))
 
 ### 2. ...
