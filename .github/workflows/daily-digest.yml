@@ -2,8 +2,8 @@ name: Daily digest
 
 on:
   schedule:
-    # 05:00 UTC = 7:00 AM Berlin in summer (CEST); winter runs 6:00 AM local
-    - cron: "0 5 * * 1-5"
+    # 01:30 UTC = 7:00 AM IST (India, no DST) on weekdays
+    - cron: "30 1 * * 1-5"
   workflow_dispatch:
 
 permissions:

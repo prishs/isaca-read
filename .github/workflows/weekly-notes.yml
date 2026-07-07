@@ -2,8 +2,8 @@ name: Weekly podcast notes
 
 on:
   schedule:
-    # Fridays 05:30 UTC (staggered after the daily digest run)
-    - cron: "30 5 * * 5"
+    # Fridays 02:00 UTC = 7:30 AM IST (staggered after the daily digest run)
+    - cron: "0 2 * * 5"
   workflow_dispatch:
 
 permissions:
