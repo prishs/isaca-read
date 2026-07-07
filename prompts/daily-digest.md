@@ -8,19 +8,21 @@ Research the past 24–48 hours of security news using web search/fetch, then wr
 
 ## Sources to sweep
 
-- US CISA: new alerts, advisories, and Known Exploited Vulnerabilities (KEV) catalog additions
-- The Hacker News, BleepingComputer — major incidents and vulnerabilities
-- Krebs on Security — investigative pieces
-- SANS Internet Storm Center — daily diary highlights
-- ISACA Now blog — audit/GRC items
-- Regulatory news: SEC cyber disclosure, EU NIS2/DORA, major data-protection rulings
+Start from these index pages (fall back to web search only if a page is unreachable or moved):
+
+- US CISA — alerts/advisories (cisa.gov/news-events/cybersecurity-advisories) and KEV additions (cisa.gov/known-exploited-vulnerabilities-catalog)
+- The Hacker News (thehackernews.com), BleepingComputer (bleepingcomputer.com/news/security/) — major incidents and vulnerabilities
+- Krebs on Security (krebsonsecurity.com) — investigative pieces
+- SANS Internet Storm Center diaries (isc.sans.edu) — practitioner notes
+- ISACA Now blog (isaca.org/resources/news-and-trends/isaca-now-blog) — audit/GRC items
+- Regulatory news: SEC cyber disclosure, EU NIS2/DORA, major data-protection rulings — web search for the past 48 hours
 
 ## Daily podcast briefings
 
 Also summarize today's (or the latest) episode of these two daily shows, from their show notes / episode pages:
 
 - **SANS Stormcast** (isc.sans.edu/podcast.html) — 5-minute technical brief
-- **Cyber Security Headlines** (CISO Series) — daily news headlines
+- **Cyber Security Headlines** (cisoseries.com) — daily news headlines
 
 ## Research efficiency (do not skip content — just fetch smart)
 

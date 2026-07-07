@@ -8,11 +8,13 @@ Using web search/fetch, review the past month's slower-moving publications and w
 
 ## Sources to review
 
-- **ISACA Journal** — latest issue's table of contents and publicly available article abstracts (member-only full text is not accessible here; summarize from public info and link to the articles)
-- **NIST** — new or updated SP 800-series publications, drafts open for comment, CSF-related news
-- **Framework & standard updates** — COBIT, ISO/IEC 27001/27002, CIS Controls, PCI DSS, SOC 2 guidance changes
-- **Major industry reports** released this month (e.g. Verizon DBIR, Mandiant M-Trends, ENISA threat landscape — only if newly published)
-- **Cloud Security Alliance** — new research publications
+Start from these pages (fall back to web search only if a page is unreachable or moved):
+
+- **ISACA Journal** (isaca.org/resources/isaca-journal) — latest issue's table of contents and publicly available article abstracts (member-only full text is not accessible here; summarize from public info and link to the articles)
+- **NIST** (csrc.nist.gov/publications) — new or updated SP 800-series publications, drafts open for comment, CSF-related news
+- **Framework & standard updates** — COBIT, ISO/IEC 27001/27002, CIS Controls, PCI DSS, SOC 2 guidance changes — web search
+- **Major industry reports** released this month (e.g. Verizon DBIR, Mandiant M-Trends, ENISA threat landscape — only if newly published) — web search
+- **Cloud Security Alliance** (cloudsecurityalliance.org/research) — new research publications
 
 ## Output format for `briefs/{{MONTH}}.md`
 

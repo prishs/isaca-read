@@ -8,10 +8,12 @@ Using web search/fetch, find the episodes published in the last 7 days for the p
 
 ## Podcasts to cover
 
-- **Risky Business** — weekly news analysis
-- **CISO Series / Defense in Depth** — governance & leadership (the weekly discussion shows, not the daily Cyber Security Headlines — that's covered in the daily digest, as is SANS Stormcast)
-- **Cloud Security Podcast** — cloud security & audit
-- **ISACA Podcast** — audit/GRC
+Start from these sites (fall back to web search only if a page is unreachable or moved):
+
+- **Risky Business** (risky.biz) — weekly news analysis
+- **CISO Series / Defense in Depth** (cisoseries.com) — governance & leadership (the weekly discussion shows, not the daily Cyber Security Headlines — that's covered in the daily digest, as is SANS Stormcast)
+- **Cloud Security Podcast** (cloudsecuritypodcast.tv) — cloud security & audit
+- **ISACA Podcast** (isaca.org/resources/news-and-trends/isaca-podcast-library) — audit/GRC
 
 ## Output format for `notes/{{WEEK}}.md`
 
