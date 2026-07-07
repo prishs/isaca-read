@@ -1,4 +1,4 @@
-name: Cleanup old digests
+name: Cleanup old generated files
 
 on:
   schedule:
@@ -14,26 +14,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history needed to read each file's commit date
 
       - name: Delete generated files older than 30 days
         run: |
-          cutoff=$(date -u -d "30 days ago" +%Y-%m-%d)
-          echo "Removing generated files dated before $cutoff"
+          cutoff=$(( $(date -u +%s) - 30*24*3600 ))
           removed=0
-          for dir in digests notes briefs; do
-            [ -d "$dir" ] || continue
-            for f in "$dir"/*.md; do
-              [ -e "$f" ] || continue
-              # Files are named by date: YYYY-MM-DD.md or YYYY-WW.md (notes)
-              name=$(basename "$f" .md)
-              # Only handle strict YYYY-MM-DD names; skip anything else
-              if [[ "$name" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
-                if [[ "$name" < "$cutoff" ]]; then
-                  git rm -q "$f"
-                  removed=$((removed+1))
-                fi
-              fi
-            done
+          for f in digests/*.md notes/*.md briefs/*.md; do
+            [ -e "$f" ] || continue
+            ts=$(git log -1 --format=%ct -- "$f")
+            if [ -n "$ts" ] && [ "$ts" -lt "$cutoff" ]; then
+              echo "Removing $f (last commit $(date -u -d @$ts +%F))"
+              git rm -q "$f"
+              removed=$((removed+1))
+            fi
           done
           echo "removed=$removed" >> "$GITHUB_ENV"
 
@@ -42,7 +37,7 @@ jobs:
           if [ "${removed:-0}" -gt 0 ]; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
-            git commit -m "chore: remove digests older than 30 days"
+            git commit -m "chore: remove generated files older than 30 days"
             git push
           else
             echo "Nothing to remove."

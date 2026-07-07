@@ -1,0 +1,105 @@
+# Reusable content-generation workflow shared by the daily/weekly/monthly jobs.
+# Substitutes {{DATE}} (YYYY-MM-DD), {{WEEK}} (YYYY-Www), {{MONTH}} (YYYY-MM)
+# in both the prompt file and the output path.
+name: Generate content
+
+on:
+  workflow_call:
+    inputs:
+      prompt_file:
+        required: true
+        type: string
+      output_file:
+        description: "Output path; may contain {{DATE}}, {{WEEK}}, {{MONTH}}"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Pick the AI provider from whichever secret is configured.
+      # Priority: Claude (OAuth or API key) -> Gemini -> Cursor.
+      - name: Select provider
+        id: provider
+        env:
+          CLAUDE_OAUTH: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          ANTHROPIC_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CURSOR_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          if [ -n "$CLAUDE_OAUTH" ] || [ -n "$ANTHROPIC_KEY" ]; then
+            echo "name=claude" >> "$GITHUB_OUTPUT"
+          elif [ -n "$GEMINI_KEY" ]; then
+            echo "name=gemini" >> "$GITHUB_OUTPUT"
+          elif [ -n "$CURSOR_KEY" ]; then
+            echo "name=cursor" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::No AI provider secret configured. Add CLAUDE_CODE_OAUTH_TOKEN, ANTHROPIC_API_KEY, GEMINI_API_KEY, or CURSOR_API_KEY in repo Settings -> Secrets -> Actions."
+            exit 1
+          fi
+
+      - name: Prepare prompt
+        id: prompt
+        env:
+          PROMPT_FILE: ${{ inputs.prompt_file }}
+          OUTPUT_FILE: ${{ inputs.output_file }}
+        run: |
+          DATE=$(date -u +%F)
+          WEEK=$(date -u +%G-W%V)
+          MONTH=$(date -u +%Y-%m)
+          OUT=$(echo "$OUTPUT_FILE" | sed "s/{{DATE}}/$DATE/g; s/{{WEEK}}/$WEEK/g; s/{{MONTH}}/$MONTH/g")
+          echo "output=$OUT" >> "$GITHUB_OUTPUT"
+          sed "s/{{DATE}}/$DATE/g; s/{{WEEK}}/$WEEK/g; s/{{MONTH}}/$MONTH/g" "$PROMPT_FILE" > /tmp/agent-prompt.md
+
+      - name: Generate (Claude)
+        if: steps.provider.outputs.name == 'claude'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          prompt: "Read /tmp/agent-prompt.md and follow its instructions exactly."
+          claude_args: '--model claude-sonnet-5 --allowedTools "Read,Write,WebSearch,WebFetch,Bash(date:*)"'
+
+      - name: Generate (Gemini)
+        if: steps.provider.outputs.name == 'gemini'
+        uses: google-github-actions/run-gemini-cli@v0
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          prompt: "Read /tmp/agent-prompt.md and follow its instructions exactly."
+
+      - name: Generate (Cursor)
+        if: steps.provider.outputs.name == 'cursor'
+        env:
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          curl -fsS https://cursor.com/install | bash
+          export PATH="$HOME/.cursor/bin:$HOME/.local/bin:$PATH"
+          cursor-agent -p "Read /tmp/agent-prompt.md and follow its instructions exactly." --force
+
+      - name: Commit and push
+        env:
+          OUT: ${{ steps.prompt.outputs.output }}
+        run: |
+          if [ ! -f "$OUT" ]; then
+            echo "::error::$OUT was not created by the agent."
+            exit 1
+          fi
+          # Stage the target file, then discard anything else the agent touched
+          git add "$OUT"
+          git checkout -- .
+          git clean -fd >/dev/null
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git commit -m "generate: $OUT"
+          git pull --rebase origin main
+          git push

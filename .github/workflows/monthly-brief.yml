@@ -1,0 +1,18 @@
+name: Monthly journal brief
+
+on:
+  schedule:
+    # 1st of the month, 06:00 UTC
+    - cron: "0 6 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  brief:
+    uses: ./.github/workflows/generate.yml
+    with:
+      prompt_file: prompts/monthly-brief.md
+      output_file: briefs/{{MONTH}}.md
+    secrets: inherit
