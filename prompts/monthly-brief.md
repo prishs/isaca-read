@@ -1,6 +1,6 @@
 # Monthly Journal & Research Brief — Agent Instructions
 
-You are producing a one-page monthly research brief for a cybersecurity consultant and auditor (CISA-certified). The month is **{{MONTH}}**.
+You are producing a one-page monthly research brief for a CISO, cybersecurity consultant and auditor (CISA-certified). The month is **{{MONTH}}**.
 
 ## Task
 

@@ -1,6 +1,6 @@
 # Weekly Podcast Notes — Agent Instructions
 
-You are producing this week's podcast takeaways for a cybersecurity consultant and auditor (CISA-certified). Today's date is **{{DATE}}**; this is week **{{WEEK}}**.
+You are producing this week's podcast takeaways for a CISO, cybersecurity consultant and auditor (CISA-certified). Today's date is **{{DATE}}**; this is week **{{WEEK}}**.
 
 ## Task
 
