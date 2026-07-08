@@ -6,7 +6,6 @@ from __future__ import annotations
 import json
 import re
 import sys
-import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 from dataclasses import dataclass
@@ -75,27 +74,89 @@ def fetch_bytes(url: str, timeout: int = 30) -> bytes:
         return resp.read()
 
 
+def _local_name(tag: str) -> str:
+    if tag.startswith("{"):
+        return tag.rsplit("}", 1)[1]
+    return tag
+
+
+def _child_text(node: ET.Element, name: str) -> str:
+    val = node.findtext(name)
+    if val:
+        return val.strip()
+    for child in node:
+        if _local_name(child.tag) == name and child.text:
+            return child.text.strip()
+    return ""
+
+
+def _feed_entries(root: ET.Element) -> list[ET.Element]:
+    channel = root.find("channel")
+    if channel is not None:
+        items = channel.findall("item")
+        if items:
+            return items
+    for pattern in (".//{*}item", ".//item", ".//{*}entry", ".//entry"):
+        nodes = root.findall(pattern)
+        if nodes:
+            return nodes
+    return []
+
+
+def _entry_link(node: ET.Element) -> str:
+    link_text = _child_text(node, "link")
+    if link_text.startswith("http"):
+        return link_text
+    alternate = ""
+    for child in node:
+        if _local_name(child.tag) != "link":
+            continue
+        href = (child.get("href") or "").strip()
+        if not href:
+            continue
+        rel = child.get("rel", "alternate")
+        if rel == "alternate":
+            return href
+        if not alternate:
+            alternate = href
+    return alternate
+
+
+def _entry_pubdate(node: ET.Element) -> str | None:
+    for name in ("pubDate", "published", "updated"):
+        val = _child_text(node, name)
+        if val:
+            return val
+    return None
+
+
+def _entry_summary(node: ET.Element) -> str:
+    for name in ("description", "summary", "content"):
+        val = _child_text(node, name)
+        if val:
+            return val
+    encoded = node.findtext("{http://purl.org/rss/1.0/modules/content/}encoded")
+    return encoded or ""
+
+
+def kev_detail_url(cve: str) -> str:
+    if re.fullmatch(r"CVE-\d{4}-\d+", cve):
+        return f"https://nvd.nist.gov/vuln/detail/{cve}"
+    return "https://www.cisa.gov/known-exploited-vulnerabilities-catalog"
+
+
 def parse_rss(source: str, body: bytes, cutoff: date) -> list[Item]:
     root = ET.fromstring(body)
-    channel = root.find("channel")
-    nodes = channel.findall("item") if channel is not None else root.findall(".//{*}item")
-    if not nodes:
-        nodes = root.findall(".//item")
-
     items: list[Item] = []
-    for node in nodes:
-        title = strip_html(node.findtext("title") or "")
-        link = (node.findtext("link") or "").strip()
+    for node in _feed_entries(root):
+        title = strip_html(_child_text(node, "title"))
+        link = _entry_link(node)
         if not title or not link:
             continue
-        pub = parse_pubdate(node.findtext("pubDate") or node.findtext("{http://www.w3.org/2005/Atom}updated"))
+        pub = parse_pubdate(_entry_pubdate(node))
         if pub is None or pub < cutoff:
             continue
-        summary = strip_html(
-            node.findtext("description")
-            or node.findtext("{http://purl.org/rss/1.0/modules/content/}encoded")
-            or ""
-        )
+        summary = strip_html(_entry_summary(node))
         items.append(Item(source=source, title=title, url=link, published=pub, summary=summary[:280]))
     return items
 
@@ -113,8 +174,9 @@ def parse_kev(source: str, body: bytes, cutoff: date) -> list[Item]:
         product = entry.get("product") or ""
         title = f"{cve}: {name}"
         summary = f"Added to KEV on {added.isoformat()}"
-        if vendor or product:
-            summary += f" — {vendor} {product}".strip()
+        vendor_product = " ".join(p.strip() for p in (vendor, product) if p and p.strip())
+        if vendor_product:
+            summary += f" — {vendor_product}"
         due = entry.get("dueDate")
         if due:
             summary += f"; federal remediation due {due}"
@@ -122,7 +184,7 @@ def parse_kev(source: str, body: bytes, cutoff: date) -> list[Item]:
             Item(
                 source=source,
                 title=title,
-                url="https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+                url=kev_detail_url(cve),
                 published=added,
                 summary=summary,
             )
@@ -140,7 +202,7 @@ def collect_items(cutoff: date) -> tuple[list[Item], list[str]]:
                 items.extend(parse_kev(feed.source, body, cutoff))
             else:
                 items.extend(parse_rss(feed.source, body, cutoff))
-        except (urllib.error.URLError, ET.ParseError, json.JSONDecodeError, TimeoutError) as exc:
+        except (OSError, ET.ParseError, json.JSONDecodeError) as exc:
             errors.append(f"- {feed.source} ({feed.url}): {exc}")
     items.sort(key=lambda i: (i.published, i.source, i.title), reverse=True)
     return items, errors
