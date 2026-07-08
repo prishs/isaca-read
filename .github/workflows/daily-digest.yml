@@ -15,5 +15,8 @@ jobs:
     uses: ./.github/workflows/generate.yml
     with:
       prompt_file: prompts/daily-digest.md
+      research_prompt_file: prompts/daily-digest-research.md
+      combined_prompt_file: prompts/daily-digest-combined.md
       output_file: digests/{{DATE}}.md
+      two_phase: true
     secrets: inherit

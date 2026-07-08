@@ -1,6 +1,6 @@
 # Reusable content-generation workflow shared by the daily/weekly/monthly jobs.
-# Substitutes {{DATE}} (YYYY-MM-DD), {{WEEK}} (YYYY-Www), {{MONTH}} (YYYY-MM)
-# in both the prompt file and the output path.
+# Substitutes {{DATE}} (YYYY-MM-DD), {{CUTOFF_DATE}} (DATE minus 3 days),
+# {{WEEK}} (YYYY-Www), {{MONTH}} (YYYY-MM) in both the prompt file and the output path.
 name: Generate content
 
 on:
@@ -13,6 +13,21 @@ on:
         description: "Output path; may contain {{DATE}}, {{WEEK}}, {{MONTH}}"
         required: true
         type: string
+      research_prompt_file:
+        description: "Research-phase prompt for two-step daily digest (Claude Haiku)"
+        required: false
+        type: string
+        default: ""
+      combined_prompt_file:
+        description: "Single-step fallback prompt when two_phase is set but provider is not Claude"
+        required: false
+        type: string
+        default: ""
+      two_phase:
+        description: "RSS pre-fetch + Haiku research then Sonnet write (daily digest)"
+        required: false
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -49,21 +64,105 @@ jobs:
             exit 1
           fi
 
-      - name: Prepare prompt
-        id: prompt
+      - name: Prepare dates
+        id: dates
         env:
-          PROMPT_FILE: ${{ inputs.prompt_file }}
           OUTPUT_FILE: ${{ inputs.output_file }}
         run: |
           DATE=$(date -u +%F)
+          CUTOFF=$(date -u -d "3 days ago" +%F)
           WEEK=$(date -u +%G-W%V)
           MONTH=$(date -u +%Y-%m)
-          OUT=$(echo "$OUTPUT_FILE" | sed "s/{{DATE}}/$DATE/g; s/{{WEEK}}/$WEEK/g; s/{{MONTH}}/$MONTH/g")
-          echo "output=$OUT" >> "$GITHUB_OUTPUT"
-          sed "s/{{DATE}}/$DATE/g; s/{{WEEK}}/$WEEK/g; s/{{MONTH}}/$MONTH/g" "$PROMPT_FILE" > /tmp/agent-prompt.md
+          OUT=$(echo "$OUTPUT_FILE" | sed "s/{{DATE}}/$DATE/g; s/{{CUTOFF_DATE}}/$CUTOFF/g; s/{{WEEK}}/$WEEK/g; s/{{MONTH}}/$MONTH/g")
+          {
+            echo "date=$DATE"
+            echo "cutoff=$CUTOFF"
+            echo "output=$OUT"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Generate (Claude)
-        if: steps.provider.outputs.name == 'claude'
+      - name: Pre-fetch RSS and KEV sources
+        if: inputs.two_phase && startsWith(steps.dates.outputs.output, 'digests/')
+        env:
+          CUTOFF: ${{ steps.dates.outputs.cutoff }}
+          DATE: ${{ steps.dates.outputs.date }}
+        run: python3 scripts/fetch-digest-sources.py "$CUTOFF" "$DATE" /tmp/digest-prefetch.md
+
+      - name: Prepare prompts
+        id: prompt
+        env:
+          PROMPT_FILE: ${{ inputs.prompt_file }}
+          RESEARCH_PROMPT_FILE: ${{ inputs.research_prompt_file }}
+          COMBINED_PROMPT_FILE: ${{ inputs.combined_prompt_file }}
+          OUTPUT: ${{ steps.dates.outputs.output }}
+          DATE: ${{ steps.dates.outputs.date }}
+          CUTOFF: ${{ steps.dates.outputs.cutoff }}
+          TWO_PHASE: ${{ inputs.two_phase }}
+        run: |
+          substitute() { sed "s/{{DATE}}/$DATE/g; s/{{CUTOFF_DATE}}/$CUTOFF/g"; }
+
+          append_prev_digest() {
+            if [[ "$OUTPUT" != digests/* ]]; then
+              return
+            fi
+            PREV=$(date -u -d "1 day ago" +%F)
+            git fetch origin gh-pages:gh-pages 2>/dev/null || true
+            if git show "gh-pages:digests/${PREV}.md" > /tmp/prev-digest.md 2>/dev/null; then
+              {
+                echo ""
+                echo "## Previous digest (for deduplication only — do not copy items unless there is new reporting since $CUTOFF)"
+                cat /tmp/prev-digest.md
+              } >> "$1"
+            fi
+          }
+
+          if [ "$TWO_PHASE" = "true" ]; then
+            if [ -n "$RESEARCH_PROMPT_FILE" ]; then
+              substitute < "$RESEARCH_PROMPT_FILE" > /tmp/agent-research-prompt.md
+              append_prev_digest /tmp/agent-research-prompt.md
+            fi
+            substitute < "$PROMPT_FILE" > /tmp/agent-prompt.md
+            append_prev_digest /tmp/agent-prompt.md
+            if [ -n "$COMBINED_PROMPT_FILE" ]; then
+              substitute < "$COMBINED_PROMPT_FILE" > /tmp/agent-combined-prompt.md
+              append_prev_digest /tmp/agent-combined-prompt.md
+            fi
+          else
+            substitute < "$PROMPT_FILE" > /tmp/agent-prompt.md
+            append_prev_digest /tmp/agent-prompt.md
+          fi
+
+          echo "output=$OUTPUT" >> "$GITHUB_OUTPUT"
+
+      - name: Research (Claude Haiku)
+        if: inputs.two_phase && steps.provider.outputs.name == 'claude'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: "Read /tmp/agent-research-prompt.md and follow its instructions exactly."
+          claude_args: '--model claude-haiku-4-5 --max-turns 20 --allowedTools "Read,Write,WebSearch,WebFetch,Bash(date:*)"'
+
+      - name: Verify research brief
+        if: inputs.two_phase && steps.provider.outputs.name == 'claude'
+        run: |
+          if [ ! -s /tmp/digest-research.md ]; then
+            echo "::error::Research phase did not produce /tmp/digest-research.md"
+            exit 1
+          fi
+
+      - name: Write digest (Claude Sonnet)
+        if: inputs.two_phase && steps.provider.outputs.name == 'claude'
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          prompt: "Read /tmp/agent-prompt.md and follow its instructions exactly."
+          claude_args: '--model claude-sonnet-5 --max-turns 15 --allowedTools "Read,Write,Bash(date:*)"'
+
+      - name: Generate (Claude, single phase)
+        if: inputs.two_phase != true && steps.provider.outputs.name == 'claude'
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -73,32 +172,54 @@ jobs:
           claude_args: '--model claude-sonnet-5 --max-turns 50 --allowedTools "Read,Write,WebSearch,WebFetch,Bash(date:*)"'
 
       - name: Generate (Gemini)
-        if: steps.provider.outputs.name == 'gemini'
+        if: steps.provider.outputs.name == 'gemini' && inputs.two_phase != true
         uses: google-github-actions/run-gemini-cli@v0
         with:
           gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
           prompt: "Read /tmp/agent-prompt.md and follow its instructions exactly."
           settings: '{"maxSessionTurns": 50}'
 
+      - name: Generate combined (Gemini)
+        if: steps.provider.outputs.name == 'gemini' && inputs.two_phase
+        uses: google-github-actions/run-gemini-cli@v0
+        with:
+          gemini_api_key: ${{ secrets.GEMINI_API_KEY }}
+          prompt: "Read /tmp/agent-combined-prompt.md and follow its instructions exactly."
+          settings: '{"maxSessionTurns": 40}'
+
       - name: Generate (Cursor)
-        if: steps.provider.outputs.name == 'cursor'
+        if: steps.provider.outputs.name == 'cursor' && inputs.two_phase != true
         env:
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
         run: |
           curl -fsS https://cursor.com/install | bash
           export PATH="$HOME/.cursor/bin:$HOME/.local/bin:$PATH"
-          # Cursor CLI has no turn cap; bound it by wall-clock instead
           timeout 15m cursor-agent -p "Read /tmp/agent-prompt.md and follow its instructions exactly." --force
 
-      - name: Generate (Copilot)
-        if: steps.provider.outputs.name == 'copilot'
+      - name: Generate combined (Cursor)
+        if: steps.provider.outputs.name == 'cursor' && inputs.two_phase
         env:
-          # Fine-grained PAT with the "Copilot Requests" permission; the
-          # workflow's own GITHUB_TOKEN has no Copilot entitlement.
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
+        run: |
+          curl -fsS https://cursor.com/install | bash
+          export PATH="$HOME/.cursor/bin:$HOME/.local/bin:$PATH"
+          timeout 15m cursor-agent -p "Read /tmp/agent-combined-prompt.md and follow its instructions exactly." --force
+
+      - name: Generate (Copilot)
+        if: steps.provider.outputs.name == 'copilot' && inputs.two_phase != true
+        env:
           GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
         run: |
           npm install -g @github/copilot
           timeout 15m copilot -p "Read /tmp/agent-prompt.md and follow its instructions exactly." --allow-all-tools
+
+      - name: Generate combined (Copilot)
+        if: steps.provider.outputs.name == 'copilot' && inputs.two_phase
+        env:
+          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+        run: |
+          npm install -g @github/copilot
+          timeout 15m copilot -p "Read /tmp/agent-combined-prompt.md and follow its instructions exactly." --allow-all-tools
 
       # Generated content lives only on the gh-pages branch (served by
       # GitHub Pages); main's history stays free of digest files.
