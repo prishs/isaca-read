@@ -8,7 +8,7 @@
 
 ## 1. What to track (three streams)
 
-### Stream A — News, advisories & daily podcasts → daily digest (6:00 AM IST, weekdays)
+### Stream A — News, advisories & daily podcasts → daily digest (6:47 AM IST, weekdays)
 
 | Source | Type | Why it matters |
 |---|---|---|
@@ -21,14 +21,14 @@
 | SANS Stormcast | Daily podcast | 5-min technical brief |
 | Cyber Security Headlines (CISO Series) | Daily podcast | Daily news headlines |
 
-### Stream B — Weekly podcasts → notes (6:30 AM IST, Saturdays)
+### Stream B — Weekly podcasts → notes (7:17 AM IST, Saturdays)
 
 - **Risky Business** — weekly news analysis
 - **CISO Series / Defense in Depth** — governance & leadership (weekly discussion shows)
 - **Cloud Security Podcast** — cloud audit relevance
 - **ISACA Podcast** — directly CISA-relevant
 
-### Stream C — Journals & research → monthly brief (7:00 AM IST, 1st of month)
+### Stream C — Journals & research → monthly brief (7:47 AM IST, 1st of month)
 
 - **ISACA Journal** — public TOC/abstracts (member full-text: local sessions only, credentials in local `.env`)
 - **NIST publications** (SP 800 series drafts & finals)
