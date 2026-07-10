@@ -2,8 +2,8 @@ name: Daily digest
 
 on:
   schedule:
-    # 01:17 UTC = 6:47 AM IST (India, no DST) on weekdays
-    - cron: "17 1 * * 1-5"
+    # 00:18 UTC = 5:48 AM IST (India, no DST) on weekdays
+    - cron: "18 0 * * 1-5"
   workflow_dispatch:
 
 permissions:

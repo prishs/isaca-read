@@ -2,8 +2,8 @@ name: Monthly journal brief
 
 on:
   schedule:
-    # 1st of the month, 02:17 UTC = 7:47 AM IST
-    - cron: "17 2 1 * *"
+    # 1st of the month, 01:18 UTC = 6:48 AM IST
+    - cron: "18 1 1 * *"
   workflow_dispatch:
 
 permissions:

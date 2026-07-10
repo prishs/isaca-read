@@ -15,9 +15,9 @@ Three scheduled GitHub Actions workflows share one reusable generator ([`.github
 
 | Workflow | Schedule (UTC) | Prompt | Output (on `gh-pages`) |
 |---|---|---|---|
-| [Daily digest](.github/workflows/daily-digest.yml) | Weekdays 01:17 (6:47 AM IST) | RSS pre-fetch → research → write (see [Daily digest pipeline](#daily-digest-pipeline)) | `digests/YYYY-MM-DD.md` |
-| [Weekly podcast notes](.github/workflows/weekly-notes.yml) | Saturdays 01:47 (7:17 AM IST) | [`prompts/weekly-notes.md`](prompts/weekly-notes.md) | `notes/YYYY-Www.md` |
-| [Monthly journal brief](.github/workflows/monthly-brief.yml) | 1st of month 02:17 (7:47 AM IST) | [`prompts/monthly-brief.md`](prompts/monthly-brief.md) | `briefs/YYYY-MM.md` |
+| [Daily digest](.github/workflows/daily-digest.yml) | Weekdays 00:18 UTC (5:48 AM IST) | RSS pre-fetch → research → write (see [Daily digest pipeline](#daily-digest-pipeline)) | `digests/YYYY-MM-DD.md` |
+| [Weekly podcast notes](.github/workflows/weekly-notes.yml) | Saturdays 00:48 UTC (6:18 AM IST) | [`prompts/weekly-notes.md`](prompts/weekly-notes.md) | `notes/YYYY-Www.md` |
+| [Monthly journal brief](.github/workflows/monthly-brief.yml) | 1st of month 01:18 UTC (6:48 AM IST) | [`prompts/monthly-brief.md`](prompts/monthly-brief.md) | `briefs/YYYY-MM.md` |
 
 The generator picks whichever AI provider secret is configured (Settings → Secrets and variables → Actions), in this priority order:
 
