@@ -1,0 +1,10 @@
+title: isaca-read
+description: Daily security & audit digests for a cybersecurity consultant (CISA)
+theme: jekyll-theme-primer
+markdown: kramdown
+
+# Exclude non-content files from the Pages build
+exclude:
+  - README.md
+  - .github/
+  - prompts/
