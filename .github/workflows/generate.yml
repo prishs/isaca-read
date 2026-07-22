@@ -159,7 +159,7 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           prompt: "Read /tmp/agent-prompt.md and follow its instructions exactly."
-          claude_args: '--model claude-sonnet-5 --max-turns 15 --allowedTools "Read,Write,Bash(date:*)"'
+          claude_args: '--model claude-sonnet-5 --max-turns 15 --allowedTools "Read,Write"'
 
       - name: Generate (Claude, single phase)
         if: inputs.two_phase != true && steps.provider.outputs.name == 'claude'
