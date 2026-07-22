@@ -33,6 +33,23 @@ Add exactly one secret to start; swap providers later by changing secrets — no
 
 ### Daily digest pipeline
 
+```mermaid
+flowchart TD
+  sched[Cron / workflow_dispatch] --> gen[generate.yml]
+  gen --> pick[Select provider by secret]
+  gen --> dates[Prepare DATE / CUTOFF]
+  dates --> prefetch[fetch-digest-sources.py → /tmp/digest-prefetch.md]
+  prefetch --> prompts[Prepare prompts + prev digest]
+
+  pick -->|Claude| research[Haiku research → /tmp/digest-research.md]
+  research --> write[Sonnet write → digests/DATE.md]
+  pick -->|Gemini / Cursor / Copilot| combined[Combined research + write]
+
+  write --> pub[Copy to gh-pages + push]
+  combined --> pub
+  pub --> pages[GitHub Pages site]
+```
+
 All providers get the same **RSS/KEV pre-fetch** step (`scripts/fetch-digest-sources.py` → `/tmp/digest-prefetch.md`):
 
 | Pre-fetched (CI, no tokens) | Agent research (web fetch) |
